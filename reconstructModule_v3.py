@@ -56,7 +56,7 @@ def read_modules(modules_filepath:Path=None):
         if not modules_filepath.is_file(): 
             raise Exception(f"Modules file '{modules_filepath}' does not exist.")
         with modules_filepath.open("rt") as f:
-            mdata = [line for line in f]
+            mdata = [line.strip() for line in f]
     return mdata
 
 def read_sample_data(sample_filepath:Path=None):
