@@ -37,7 +37,7 @@ def warn(msg):
 def create_directory(dirpath:Path=None):
     """Create result directory
     """
-    if dirpath is None or not dirpath.is_dir():
+    if dirpath is None:
         warn(f"Result directory missing, using '{_DEFAULT_RESULTS_DIR.resolve()}/' as result directory path.")
         dirpath = _DEFAULT_RESULTS_DIR
     dirpath.mkdir(exist_ok=True)
