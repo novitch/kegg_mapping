@@ -37,27 +37,11 @@ def warn(msg):
 def create_directory(dirpath:Path=None):
     """Create result directory
     """
-    if dirpath is None:
+    if dirpath is None or not dirpath.is_dir():
         warn(f"Result directory missing, using '{_DEFAULT_RESULTS_DIR.resolve()}/' as result directory path.")
         dirpath = _DEFAULT_RESULTS_DIR
     dirpath.mkdir(exist_ok=True)
     return dirpath
-
-def read_modules(modules_filepath:Path=None):
-    """Read input module file.
-
-    If it does not exist, give an empty list as expected modules.
-    """
-    mdata = None
-    if modules_filepath is None: 
-        warn("Modules filepath is empty.")
-        mdata = []
-    else:
-        if not modules_filepath.is_file(): 
-            raise Exception(f"Modules file '{modules_filepath}' does not exist.")
-        with modules_filepath.open("rt") as f:
-            mdata = [line.strip() for line in f]
-    return mdata
 
 def read_sample_data(sample_filepath:Path=None):
     """Read input sample file.
@@ -86,7 +70,7 @@ def write_result_modules(result_filepath:Path=None, result_data=None):
             # module \t indice \n
             f.write(f"{r[0]}\t{r[1]}\n")
 
-def process_sample(sample_filepath:Path=None, modules_filepath:Path=None, results_dir:Path=None):
+def process_sample(sample_filepath:Path=None, results_dir:Path=None):
     """Main process
 
     Create a sample codification for each module.    
@@ -94,10 +78,6 @@ def process_sample(sample_filepath:Path=None, modules_filepath:Path=None, result
     
     # result var
     final_results = []
-    sample_modules = set()
-
-    # modules
-    modules = read_modules(modules_filepath = modules_filepath)
 
     # result file
     result_modules_filepath = results_dir.joinpath(f"{sample_filepath.stem}_modules.tsv") 
@@ -139,23 +119,17 @@ def process_sample(sample_filepath:Path=None, modules_filepath:Path=None, result
             # switch
             if line.endswith('(complete)'):
                 missing = "0"
-            elif line.endswith('(incomplete)'):
-                missing = "1"
             elif line.endswith('(1 block missing)'):
-                missing = "2"
+                missing = "1"
             elif line.endswith('(2 blocks missing)'):
+                missing = "2"
+            elif line.endswith('(incomplete)'):
                 missing = "3"
             else:
                 raise Exception(f"Wrong line ending: '{line}'")
             # res
             final_results.append((module, missing))
-            sample_modules.add(module)
 
-    # add missing modules
-    for m in modules:
-        if m not in sample_modules:
-            final_results.append((m, '4'))
-    
     # write result
     final_results.sort()
     write_result_modules(result_filepath=result_modules_filepath, result_data=final_results)
@@ -174,11 +148,9 @@ def get_argparser():
       1 ... 1 block missing
       2 ... 2 blocks missing
       3 ... incomplete
-      4 ... not present
     """))
     # attr
     parser.add_argument("-s", "--sample-filepath", type=str, help="A path to the sample filepath", required=True)
-    parser.add_argument("-m", "--modules-filepath", type=str, help="A path to the modules file")
     parser.add_argument("-r", "--result-directory", type=str, help="A path to results directory, will be created if it does not exist")
     # 
     return parser
@@ -206,7 +178,6 @@ if __name__ == '__main__':
     # args and kwargs
     kw = {
         "samples_filepath": Path(parsed_args.sample_filepath) if parsed_args.sample_filepath is not None else None,
-        "modules_filepath": Path(parsed_args.modules_filepath) if parsed_args.modules_filepath is not None else None,
         "results_dirpath": Path(parsed_args.result_directory) if parsed_args.result_directory is not None else None,
     }
     # exec
