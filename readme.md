@@ -9,3 +9,6 @@ for i in $(cat [list of files created in step 1]);do python reconstructModule_v3
 ```
 
 # 3 concatenate
+```
+perl concat_kegg_enrichment.pl -query=lr -output=konzo_module_enrichment.txt
+```
