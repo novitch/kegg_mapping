@@ -19,7 +19,7 @@ open(FILE, $query) or die "can't open $query";
 while (<FILE>) {
     chomp;
     my @tab = split ("\t", $_);
-    if ($tab[0] eq "ko"){
+    if (($tab[0] eq "ko") || ($tab[0] eq "# Gene Family")){
       for my $i (1..$#tab){
 				#$tab[$i] =~ s/blastout\///;
         push (@sample, $tab[$i]);
